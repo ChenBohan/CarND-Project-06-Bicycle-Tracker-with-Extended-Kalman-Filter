@@ -23,6 +23,26 @@ data file: `obj_pose-laser-radar-synthetic-input.txt`
 
 Whereas radar has three measurements (rho, phi, rhodot), lidar has two measurements (x, y).
 
+## Variable Definitions
+
+- `x` is the state vector.
+
+- `z` is measurement vector. 
+
+  - For a lidar sensor, the `z` vector contains the `position−x` and `position−y` measurements.
+
+-  `H` is the measurement matrix, which projects your belief about the object's current state into the measurement space of the sensor.
+
+  - Multiplying Hx allows us to compare x, our belief, with z, the sensor measurement.
+  
+- `R` is the Measurement Noise Covariance Matrix, which represents the uncertainty in our sensor measurements.
+
+  - will be provided by the sensor manufacturer
+  
+  - the off-diagonal 0 in RR indicate that the noise processes are uncorrelated.
+  
+- `Q` is the process covariance matrix.
+
 ## Kalman Filter
 
 ### 1. Initialize
@@ -60,5 +80,31 @@ else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
 ```
 
 ### 2. Predict
+
+1. Update State transition matrix with dt
+
+```pyhon
+ekf_.F_ = MatrixXd(4, 4);
+ekf_.F_ << 1, 0, dt, 0,
+   0, 1, 0, dt,
+   0, 0, 1, 0,
+   0, 0, 0, 1;
+```
+
+2. set the process covariance matrix Q with dt
+
+```pyhon
+ekf_.Q_ = MatrixXd(4, 4);
+ekf_.Q_ << dt_4 / 4 * noise_ax, 0, dt_3 / 2 * noise_ax, 0,
+   0, dt_4 / 4 * noise_ay, 0, dt_3 / 2 * noise_ay,
+   dt_3 / 2 * noise_ax, 0, dt_2*noise_ax, 0,
+   0, dt_3 / 2 * noise_ay, 0, dt_2*noise_ay;
+```
+
+3. Call kalman filter predict.
+
+```python
+ekf_.Predict();
+```
 
 ### 3. Update
