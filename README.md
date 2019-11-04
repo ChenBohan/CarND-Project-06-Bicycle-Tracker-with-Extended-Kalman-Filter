@@ -108,3 +108,69 @@ ekf_.Predict();
 ```
 
 ### 3. Update
+
+```python
+if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
+  // Radar updates
+  // Use Jacobian instead of H
+  ekf_.H_ = tools.CalculateJacobian(ekf_.x_);
+  ekf_.R_ = R_radar_;
+  ekf_.UpdateEKF(measurement_pack.raw_measurements_);
+} else {
+  // Laser updates
+  ekf_.H_ = H_laser_;
+  ekf_.R_ = R_laser_;
+  ekf_.Update(measurement_pack.raw_measurements_);
+}
+```
+
+```python
+void KalmanFilter::UpdateEKF(const VectorXd &z) {
+
+  // update the state by using Extended Kalman Filter equations
+  // Recalculate x object state to rho, theta, rho_dot coordinates
+  double px = x_(0);
+  double py = x_(1);
+  double vx = x_(2);
+  double vy = x_(3);
+  double rho = sqrt(px * px + py * py);
+  double theta = atan2(py, px);
+  double rho_dot = (px * vx + py * vy) / rho;
+
+  VectorXd h = VectorXd(3);
+  h << rho, theta, rho_dot;
+  VectorXd y = z - h;
+
+  if (y(1) > M_PI) {
+    y(1) = 2*M_PI - y(1);
+  } else if (y(1) < -M_PI){
+    y(1) = 2*M_PI + y(1);
+  }
+  cout << "theta" << y(1) << endl<<endl;
+  UpdateWithY(y);
+}
+```
+
+```python
+void KalmanFilter::Update(const VectorXd &z) {
+
+  // update the state by using Kalman Filter equations
+  VectorXd y = z - H_ * x_;
+  UpdateWithY(y);
+}
+```
+
+```python
+void KalmanFilter::UpdateWithY(const VectorXd &y){
+
+  // Kalman gain:
+  MatrixXd Ht_ = H_.transpose();
+  MatrixXd K = P_ * Ht_ * (H_ * P_ * Ht_ + R_).inverse();
+
+  //new estimate
+  x_ = x_ + (K * y);
+  int x_size = x_.size();
+  MatrixXd I = MatrixXd::Identity(x_size, x_size);
+  P_ = (I - K * H_) * P_;
+}
+```
