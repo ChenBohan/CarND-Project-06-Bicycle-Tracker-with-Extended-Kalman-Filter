@@ -7,6 +7,10 @@ Udacity Self-Driving Car Engineer Nanodegree: Project 5 - Extended Kalman Filter
 
 - [Download the simulator](https://github.com/udacity/self-driving-car-sim/releases/)
 
+## Sim
+
+<img src="https://github.com/ChenBohan/CarND-Project-06-Bicycle-Tracker-with-Extended-Kalman-Filter/blob/master/ekf_sim.gif" width = "100%" height = "100%" div align=center />
+
 ## Files in the Github src Folder
 
 - `main.cpp` - communicates with the Term 2 Simulator receiving data measurements, calls a function to run the Kalman filter, calls a function to calculate RMSE
